@@ -1,0 +1,130 @@
+Sub stock_market()
+
+Dim ticker_symbol As String
+Dim row_dataset As Long
+Dim lastrow As Long
+Dim open_beginning As Double
+Dim close_end As Double
+Dim stock_volume_total As Double
+Dim yearly_change As Double
+Dim percentage_change As Double
+Dim summary_table_counter As Integer
+Dim row_volume As Long
+Dim ws As Worksheet
+
+For Each ws In Worksheets
+
+    ws.Activate
+
+    lastrow_data = Cells(Rows.Count, 1).End(xlUp).Row
+    stock_volume_total = 0
+    summary_table_counter = 0
+
+    Range("I1") = "Ticker"
+    Range("J1") = "Yearly Change"
+    Range("K1") = "Percentage Change"
+    Range("L1") = "Total Stock Volume"
+
+    For row_dataset = 2 To lastrow_data
+
+        row_volume = Cells(row_dataset, 7)
+
+        If Cells(row_dataset, 1) <> Cells(row_dataset + 1, 1) Then
+
+            close_end = Cells(row_dataset, 6)
+
+            yearly_change = close_end - open_beginning
+
+            If open_beginning <> 0 Then
+                percentage_change = (close_end - open_beginning) / open_beginning
+            Else
+                percentage_change = 0
+            End If
+
+            ticker_symbol = Cells(row_dataset, 1)
+            
+            stock_volume_total = stock_volume_total + row_volume
+
+            Cells(2 + summary_table_counter, 9) = ticker_symbol
+            Cells(2 + summary_table_counter, 10) = yearly_change
+
+            If yearly_change < 0 Then
+                Cells(2 + summary_table_counter, 10).Interior.ColorIndex = 3
+            ElseIf yearly_change > 0 Then
+                Cells(2 + summary_table_counter, 10).Interior.ColorIndex = 4
+            Else
+                Cells(2 + summary_table_counter, 10).Interior.ColorIndex = 6
+            End If
+
+
+            Cells(2 + summary_table_counter, 11) = percentage_change
+            Cells(2 + summary_table_counter, 11).NumberFormat = "0.00%"
+
+            Cells(2 + summary_table_counter, 12) = stock_volume_total
+
+            summary_table_counter = summary_table_counter + 1
+
+            stock_volume_total = 0
+
+        Else
+            If Cells(row_dataset, 1) <> Cells(row_dataset - 1, 1) Then
+                open_beginning = Cells(row_dataset, 3)
+            End If
+
+            stock_volume_total = stock_volume_total + row_volume
+        End If
+    Next
+
+    Dim row_summary As Long
+    Dim lastrow_summary As Long
+    Dim greatest_increase As Double
+    Dim greatest_decrease As Double
+    Dim greatest_volumn As Long
+    Dim ticker_gi As String
+    Dim ticker_gd As String
+    Dim ticker_gv As String
+
+    lastrow_summary = Cells(Rows.Count, 9).End(xlUp).Row
+    greatest_increase = Cells(2, 11)
+    greatest_decrease = Cells(2, 11)
+    greatest_volume = Cells(2, 12)
+
+
+    For row_summary = 2 To lastrow_summary
+        If Cells(row_summary, 11) > greatest_increase Then
+            greatest_increase = Cells(row_summary, 11)
+            ticker_gi = Cells(row_summary, 9)
+        End If
+
+        If Cells(row_summary, 11) < greatest_decrease Then
+            greatest_decrease = Cells(row_summary, 11)
+            ticker_gd = Cells(row_summary, 9)
+        End If
+
+        If Cells(row_summary, 12) > greatest_volume Then
+            greatest_volume = Cells(row_summary, 12)
+            ticker_gv = Cells(row_summary, 9)
+        End If
+
+    Next
+
+    Cells(1, 16) = "Ticker"
+    Cells(1, 17) = "Value"
+
+    Cells(2, 15) = "Greatest % Increase"
+    Cells(2, 16) = ticker_gi
+    Cells(2, 17) = greatest_increase
+    Cells(2, 17).NumberFormat = "0.00%"
+
+    Cells(3, 15) = "Greatest % Decrease"
+    Cells(3, 16) = ticker_gd
+    Cells(3, 17) = greatest_decrease
+    Cells(3, 17).NumberFormat = "0.00%"
+
+    Cells(4, 15) = "Greatest Total Volume"
+    Cells(4, 16) = ticker_gv
+    Cells(4, 17) = greatest_volume
+
+Next ws
+
+End Sub
